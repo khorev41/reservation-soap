@@ -1,0 +1,25 @@
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="http://kopr.ics.upjs.sk"
+        elementFormDefault="qualified">
+
+       <element name="ReservationRequest">
+        <complexType>
+            <sequence>
+                <element name="patientID" type="string"/>
+                <element name="appointmentID" type="int"/>
+            </sequence>
+        </complexType>
+    </element>
+
+    <element name="ReservationResponse">
+        <complexType>
+            <sequence>
+                <element name="appointmentID" type="int"/>
+                <element name="patientID" type="string"/>
+                <element name="appointmentDate" type="string"/>
+                <element name="appointmentTime" type="string"/>
+                <element name="doctorName" type="string"/>
+            </sequence>
+        </complexType>
+    </element>
+</schema>
