@@ -16,7 +16,7 @@ public class ReservationServiceClient {
         return reservationService.getReservationPort().makeReservation(request);
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         ReservationServiceClient client = new ReservationServiceClient();
     }
 }

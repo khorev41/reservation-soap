@@ -21,7 +21,7 @@ public class Appointment {
     private String patientId;
 
     @ManyToOne
-    @JoinColumn(name = "doctorId", nullable = true)
+    @JoinColumn(name = "doctorId")
     private Doctor doctor;
 
     public int getId() {
@@ -74,11 +74,6 @@ public class Appointment {
 
     @Override
     public String toString() {
-        return "Appointment{" +
-                "id=" + id +
-                ", patientId='" + patientId + '\'' +
-                ", doctor=" + doctor +
-                ", datetime=" + datetime +
-                '}';
+        return "Appointment{" + "id=" + id + ", patientId='" + patientId + '\'' + ", doctor=" + doctor + ", datetime=" + datetime + '}';
     }
 }

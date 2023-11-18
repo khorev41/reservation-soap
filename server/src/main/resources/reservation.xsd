@@ -2,7 +2,7 @@
         targetNamespace="http://kopr.ics.upjs.sk"
         elementFormDefault="qualified">
 
-       <element name="ReservationRequest">
+    <element name="ReservationRequest">
         <complexType>
             <sequence>
                 <element name="patientID" type="string"/>

@@ -35,6 +35,6 @@ public class Launcher {
         endpoint.setProperties(filter);
         endpoint.setMetadata(metadata);
         endpoint.publish("http://localhost:8888/reservation");
-        System.out.println("Server running...");
+        System.out.println("Server is running...");
     }
 }

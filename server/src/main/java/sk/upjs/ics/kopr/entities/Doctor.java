@@ -40,10 +40,6 @@ public class Doctor {
 
     @Override
     public String toString() {
-        return "Doctor{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", specializationCode=" + specializationCode +
-                '}';
+        return "Doctor{" + "id=" + id + ", name='" + name + '\'' + ", specializationCode=" + specializationCode + '}';
     }
 }

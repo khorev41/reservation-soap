@@ -29,23 +29,28 @@ public class ReservationServiceClientTest {
 
     @Test
     public void testReservationHaveCorrectAppointmentId() {
+        int appointmentID = 11;
         try {
-            ReservationResponse reservationResponse = client.makeReservation("123456/7890", 11);
+            ReservationResponse reservationResponse = client.makeReservation("123456/7890", appointmentID);
 
-            assertTrue(reservationResponse.getAppointmentID() == 11);
+            assertEquals(11, reservationResponse.getAppointmentID());
         } catch (Exception e) {
             fail("Exception thrown: " + e.getMessage());
+        } finally {
+            Appointment appointment = appointmentService.getAppointmentById(11).get();
+            appointment.setPatientId(null);
+            appointmentService.saveAppointment(appointment);
         }
     }
 
     @Test
-    public void testReservationWillHaveIdZeroIfNotPresentInDB() {
+    public void testThrowErrorIfAppointmentNotPresentInDB() {
+        int appointmentID = Integer.MAX_VALUE;
         try {
-            ReservationResponse reservationResponse = client.makeReservation("123456/7890", 11);
-            Optional<Appointment> appointmentById = appointmentService.getAppointmentById(11);
+            Optional<Appointment> appointmentById = appointmentService.getAppointmentById(appointmentID);
 
-            if(!appointmentById.isPresent()){
-                assertTrue(reservationResponse.getAppointmentID() == 0);
+            if (appointmentById.isEmpty()) {
+                assertThrows(ReservationFaultMessage.class, () -> client.makeReservation("123", appointmentID));
             }
         } catch (Exception e) {
             fail("Exception thrown: " + e.getMessage());
@@ -54,14 +59,19 @@ public class ReservationServiceClientTest {
 
     @Test
     public void testReservationHaveCorrectPatientId() {
+        Optional<Appointment> optionalAppointment = null;
         try {
             String patientId = "123456/7890";
             ReservationResponse reservationResponse = client.makeReservation(patientId, 11);
-            Optional<Appointment> optionalAppointment = appointmentService.getAppointmentById(reservationResponse.getAppointmentID());
+            optionalAppointment = appointmentService.getAppointmentById(reservationResponse.getAppointmentID());
 
-            if(optionalAppointment.isPresent()){
-                assertTrue(reservationResponse.getPatientID().equals(patientId));
-                assertTrue(optionalAppointment.get().getPatientId().equals(patientId));
+            if (optionalAppointment.isPresent()) {
+                assertEquals(reservationResponse.getPatientID(), patientId);
+                assertEquals(optionalAppointment.get().getPatientId(), patientId);
+
+                Appointment appointment = optionalAppointment.get();
+                appointment.setPatientId(null);
+                appointmentService.saveAppointment(appointment);
             }
         } catch (Exception e) {
             fail("Exception thrown: " + e.getMessage());
@@ -70,19 +80,58 @@ public class ReservationServiceClientTest {
 
     @Test
     public void testReservationReallySavedToDB() {
+        int appointmentId = 10;
+        String patientId = "123456/7890";
         try {
-            String patientId = "123456/7890";
-            ReservationResponse reservationResponse = client.makeReservation(patientId, 10);
+            ReservationResponse reservationResponse = client.makeReservation(patientId, appointmentId);
 
             Optional<Appointment> optionalAppointment = appointmentService.getAppointmentById(reservationResponse.getAppointmentID());
-            if(optionalAppointment.isPresent()){
-                assertTrue(optionalAppointment.get().getPatientId().equals(patientId));
-            }
+            optionalAppointment.ifPresent(appointment -> assertEquals(appointment.getPatientId(), patientId));
         } catch (Exception e) {
             fail("Exception thrown: " + e.getMessage());
+        } finally {
+            Appointment appointment = appointmentService.getAppointmentById(appointmentId).get();
+            appointment.setPatientId(null);
+            appointmentService.saveAppointment(appointment);
         }
     }
 
+    @Test
+    public void testMakeReservationWithInvalidAppointmentIDThrowsReservationFaultMessage() {
+        ReservationServiceImpl reservationService = new ReservationServiceImpl();
+        ReservationRequest reservationRequest = new ReservationRequest();
+        reservationRequest.setPatientID("123456/7890");
+        reservationRequest.setAppointmentID(0);
+
+        assertThrows(ReservationFaultMessage.class, () -> reservationService.makeReservation(reservationRequest));
+    }
+
+    @Test
+    public void testMakeReservationWithNonexistentAppointmentIDThrowsReservationFaultMessage() {
+        String patientID = "123456/7890";
+        int appointmentID = 999;
+
+        assertThrows(ReservationFaultMessage.class, () -> client.makeReservation(patientID, appointmentID));
+    }
+
+    @Test
+    public void testMakeReservationWithAlreadyReservedAppointmentThrowsReservationFaultMessage() {
+        try {
+            int appointmentID = 11;
+            try {
+                client.makeReservation("123", appointmentID);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            assertThrows(ReservationFaultMessage.class, () -> client.makeReservation("abc", appointmentID));
+        } catch (Exception e) {
+            fail("Exception thrown: " + e.getMessage());
+        } finally {
+            Appointment appointment = appointmentService.getAppointmentById(11).get();
+            appointment.setPatientId(null);
+            appointmentService.saveAppointment(appointment);
+        }
+    }
 
 
 }
